@@ -4,8 +4,8 @@ namespace Bellal\VictoryLinkSMS;
 
 use Bellal\VictoryLinkSMS\Helpers\Response;
 use Bellal\VictoryLinkSMS\Interfaces\Message;
-use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Str;
+use GuzzleHttp\Client;
+use Ramsey\Uuid\Uuid;
 
 class VictoryLink implements Message
 {
@@ -47,7 +47,11 @@ class VictoryLink implements Message
     {
         $this->buildRequestParams($data);
 
-        $response = Http::post($this->api, $this->params);
+        $client = new Client();
+        $response = $client->post($this->api, [
+            'form_params' => $this->params,
+            'headers' => ['Content-Type' => 'application/x-www-form-urlencoded'],
+        ]);
 
         $this->handleResponse($response);
 
@@ -83,7 +87,7 @@ class VictoryLink implements Message
             'SMSLang' => $this->credentials['language'],
             'SMSSender' => $this->credentials['sender'],
             'SMSReceiver' => $data['to'],
-            'SMSID' => Str::uuid(),
+            'SMSID' => (string) Uuid::uuid4(),
         ];
     }
 }
